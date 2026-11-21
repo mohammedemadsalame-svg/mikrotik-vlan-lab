@@ -1,0 +1,38 @@
+name: MikroTik VLAN Terraform CI/CD
+
+on:
+  pull_request:
+    branches: [ "main" ]
+  push:
+    branches: [ "main" ]
+
+env:
+  TF_VAR_router_host: ${{ secrets.ROUTER_HOST }}
+  TF_VAR_router_username: ${{ secrets.ROUTER_USERNAME }}
+  TF_VAR_router_password: ${{ secrets.ROUTER_PASSWORD }}
+  TF_VAR_router_insecure: ${{ secrets.ROUTER_INSECURE }}
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.8
+
+      - name: Terraform Init & Validate
+        run: |
+          terraform fmt -check
+          terraform init -input=false
+          terraform validate
+
+      - name: Terraform Plan
+        run: terraform plan -input=false
+
+      - name: Terraform Apply (on main push)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: terraform apply -auto-approve -input=false
