@@ -11,6 +11,7 @@ env:
   TF_VAR_router_username: ${{ secrets.ROUTER_USERNAME }}
   TF_VAR_router_password: ${{ secrets.ROUTER_PASSWORD }}
   TF_VAR_router_insecure: ${{ secrets.ROUTER_INSECURE }}
+  TF_VAR_vlans: '{"vlan10-admin":{"vlan_id":10,"interface":"ether3"},"vlan20-network":{"vlan_id":20,"interface":"ether3"},"vlan30-support":{"vlan_id":30,"interface":"ether3"},"vlan40-dev":{"vlan_id":40,"interface":"ether3"}}'
 
 jobs:
   terraform:
@@ -26,8 +27,8 @@ jobs:
           terraform validate
 
       - name: Terraform Plan
-        run: terraform plan -var-file="terraform.tfvars" -input=false
+        run: terraform plan -input=false
 
       - name: Terraform Apply (on main push)
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: terraform apply -var-file="terraform.tfvars" -auto-approve -input=false
+        run: terraform apply -auto-approve -input=false
